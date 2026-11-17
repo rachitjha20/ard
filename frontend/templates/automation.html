@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Automation · ARD{% endblock %}
+{% block content %}
+<div class="page">
+  <header class="page-head">
+    <div>
+      <h1>Automation</h1>
+      <p>Every operation runs as a job in a separate worker process. Jobs are stored on disk, so the queue survives a restart. Batch workflows build on this in a later phase.</p>
+    </div>
+    <button class="btn" type="button" id="jobs-refresh">Refresh</button>
+  </header>
+  <section class="grid grid-stats" aria-label="Queue">
+    <div class="card stat"><span class="label">Running now</span><span class="value" id="q-running">–</span></div>
+    <div class="card stat"><span class="label">Allowed at once</span><span class="value" id="q-limit">–</span><span class="sub" id="q-limit-note"></span></div>
+    <div class="card stat"><span class="label">Worker isolation</span><span class="value" id="q-mode" style="font-size:18px">–</span></div>
+  </section>
+  <section class="card" aria-labelledby="jobs-title">
+    <h2 id="jobs-title">Recent jobs</h2>
+    <div class="table-wrap">
+      <table class="table">
+        <thead><tr><th>Operation</th><th>Status</th><th>Priority</th><th>Started</th><th>Duration</th><th>Result</th><th></th></tr></thead>
+        <tbody id="jobs"></tbody>
+      </table>
+    </div>
+    <p class="muted" id="jobs-empty" hidden>No jobs yet. Edit a document in the Workspace and it will appear here.</p>
+  </section>
+</div>
+{% endblock %}
+{% block scripts %}<script type="module" src="/static/js/automation.js"></script>{% endblock %}

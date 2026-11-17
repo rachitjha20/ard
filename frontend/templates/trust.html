@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block title %}Trust & Settings · ARD{% endblock %}
+{% block content %}
+<div class="page">
+  <header class="page-head">
+    <div>
+      <h1>Trust &amp; Settings</h1>
+      <p>What ARD has recorded, how it protects your documents, and how much of this computer it may use.</p>
+    </div>
+  </header>
+
+  <div class="tabs" role="tablist" aria-label="Sections" id="trust-tabs">
+    <button class="tab" role="tab" type="button" data-section="audit" aria-selected="true">Audit log</button>
+    <button class="tab" role="tab" type="button" data-section="guardian" aria-selected="false">Guardian</button>
+    <button class="tab" role="tab" type="button" data-section="integrations" aria-selected="false">Integrations</button>
+    <button class="tab" role="tab" type="button" data-section="settings" aria-selected="false">Appearance &amp; diagnostics</button>
+  </div>
+
+  <section class="grid" data-section="audit">
+    <div class="card">
+      <div class="row"><h2>Audit chain</h2><span class="badge" id="audit-status">Checking…</span><span class="spacer"></span>
+        <button class="btn btn-sm" type="button" id="audit-verify">Verify now</button></div>
+      <p class="muted" style="margin-top:8px">Each record includes the hash of the one before it, so a removed or edited record breaks the chain. This catches accidental damage and casual tampering. It is evidence, not proof: someone with full control of this computer could rewrite the whole log.</p>
+      <p class="muted" id="audit-problem" style="margin-top:6px"></p>
+    </div>
+    <div class="card">
+      <h2>Recent activity</h2>
+      <div class="table-wrap"><table class="table">
+        <thead><tr><th>#</th><th>When</th><th>Action</th><th>Outcome</th><th>Through</th><th>Details</th></tr></thead>
+        <tbody id="audit-events"></tbody>
+      </table></div>
+      <p class="muted" id="audit-empty" hidden>No activity recorded yet.</p>
+    </div>
+  </section>
+
+  <section class="grid" data-section="guardian" hidden>
+    <div class="grid grid-stats">
+      <div class="card stat"><span class="label">State</span><span class="value" id="g-state" style="font-size:20px">–</span><span class="sub" id="g-state-note"></span></div>
+      <div class="card stat"><span class="label">CPU</span><span class="value" id="g-cpu">–</span><div class="meter" id="g-cpu-meter"><i></i></div></div>
+      <div class="card stat"><span class="label">Memory in use</span><span class="value" id="g-mem">–</span><div class="meter" id="g-mem-meter"><i></i></div><span class="sub" id="g-mem-note"></span></div>
+      <div class="card stat"><span class="label">Free disk space</span><span class="value" id="g-disk">–</span><span class="sub" id="g-proc"></span></div>
+    </div>
+    <div class="card">
+      <div class="row"><h2>Last two minutes</h2><span class="spacer"></span>
+        <span class="legend"><span><i></i>CPU</span><span><i class="mem"></i>Memory</span></span></div>
+      <svg class="spark" id="g-spark" viewBox="0 0 100 100" preserveAspectRatio="none" role="img" aria-label="CPU and memory use over the last two minutes"><path id="g-spark-cpu"/><path id="g-spark-mem" class="mem"/></svg>
+    </div>
+    <div class="card">
+      <h2>Profile</h2>
+      <p class="muted" style="margin-bottom:10px">The Guardian only slows or pauses ARD's own background work. It never stops other programs, never shuts the computer down and never deletes anything.</p>
+      <div class="fields" id="g-profiles" role="radiogroup" aria-label="Guardian profile"></div>
+    </div>
+    <div class="card">
+      <h2>Interventions</h2>
+      <ul id="g-interventions" style="margin:0;padding-left:18px;display:grid;gap:6px"></ul>
+      <p class="muted" id="g-interventions-empty">None. ARD has not needed to slow down.</p>
+    </div>
+  </section>
+
+  <section class="grid" data-section="integrations" hidden>
+    <div class="card">
+      <div class="row"><h2>Engines</h2><span class="spacer"></span><button class="btn btn-sm" type="button" id="caps-refresh">Check again</button></div>
+      <p class="muted" style="margin:8px 0 4px">ARD detects what is installed and works with what it finds. A missing optional engine never stops ARD from starting, and nothing is installed or downloaded automatically.</p>
+      <div id="caps"></div>
+    </div>
+  </section>
+
+  <section class="grid grid-2" data-section="settings" hidden>
+    <div class="card">
+      <h2>Appearance</h2>
+      <div class="fields" id="theme" role="radiogroup" aria-label="Colour scheme">
+        <label class="choice"><input type="radio" name="theme" value="system"><div><strong id="theme-system-label">System</strong><span>Follow this computer's setting.</span></div></label>
+        <label class="choice"><input type="radio" name="theme" value="light"><div><strong>Light</strong><span>Always light.</span></div></label>
+        <label class="choice"><input type="radio" name="theme" value="dark"><div><strong>Dark</strong><span>Always dark.</span></div></label>
+      </div>
+    </div>
+    <div class="card">
+      <div class="row"><h2>Diagnostics</h2><span class="spacer"></span><button class="btn btn-sm" type="button" id="diag-copy">Copy</button></div>
+      <p class="muted" style="margin:8px 0">Contains versions, paths and health checks. No document content and no secrets.</p>
+      <dl class="kv" id="diag"></dl>
+    </div>
+  </section>
+</div>
+{% endblock %}
+{% block scripts %}<script type="module" src="/static/js/trust.js"></script>{% endblock %}

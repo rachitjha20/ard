@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Intelligence · ARD{% endblock %}
+{% block content %}
+<div class="page">
+  <header class="page-head">
+    <div>
+      <h1>Intelligence</h1>
+      <p>Text recognition (OCR), search inside documents and category suggestions are built and live in the Library and Workspace. Extraction, comparison and question answering arrive in a later phase and are always optional: viewing, editing and organising never depend on AI.</p>
+    </div>
+  </header>
+  <div class="notice">{{ icon('info') }}
+    <div>Nothing on this page sends a document anywhere. Engines run on this computer; ARD never downloads a model or language pack on its own, and an external AI provider would need your explicit consent each time.</div>
+  </div>
+  <section class="card" aria-labelledby="engines-title">
+    <h2 id="engines-title">Engines this needs</h2>
+    <div id="engines"><p class="muted">Checking…</p></div>
+  </section>
+  <section class="card" aria-labelledby="planned-title">
+    <h2 id="planned-title">Planned</h2>
+    <dl class="kv">
+      <dt>Built</dt><dd>Searchable text for scanned pages (English and Hindi), search inside documents with page references, category suggestions with evidence, tags, smart albums and duplicate candidates. None of it uses an AI model.</dd>
+      <dt>Document Intelligence</dt><dd>Structured and table extraction, summaries, comparison, translation, and answers with page citations.</dd>
+      <dt>Honesty rules</dt><dd>AI output is marked as such and kept apart from source facts. If retrieval does not support an answer, ARD says so instead of inventing a citation.</dd>
+    </dl>
+  </section>
+</div>
+{% endblock %}
+{% block scripts %}<script type="module" src="/static/js/intelligence.js"></script>{% endblock %}

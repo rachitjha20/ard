@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+{% block title %}Workspace · ARD{% endblock %}
+{% block head %}<link rel="stylesheet" href="/static/css/workspace.css">{% endblock %}
+{% block content %}
+<div class="ws" id="ws">
+  <div class="ws-tabs">
+    <div class="ws-tablist" id="ws-tabs" role="tablist" aria-label="Open documents"></div>
+    <a class="btn btn-ghost btn-sm" href="/library" title="Open another document from the library">{{ icon('plus') }}Open</a>
+  </div>
+
+  <div class="ws-empty" id="ws-empty" hidden>
+    <div class="empty">
+      {{ icon('workspace') }}
+      <h2>No document open</h2>
+      <p>Open one from the library, or drop a PDF here to import and open it.</p>
+      <div class="row">
+        <a class="btn btn-primary" href="/library">Go to library</a>
+        <input type="file" id="ws-file" accept="application/pdf,.pdf,.doc,.docx,.odt,.rtf,.xls,.xlsx,.ods,.ppt,.pptx,.odp" multiple hidden>
+        <button class="btn" type="button" id="ws-import">{{ icon('upload') }}Import PDFs</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="ws-main" id="ws-main" hidden>
+    <div class="ws-toolbar" role="toolbar" aria-label="Viewer">
+      <button class="btn btn-ghost btn-icon" type="button" id="tb-panel" aria-label="Toggle side panel" aria-pressed="true">{{ icon('panel') }}</button>
+      <span class="tb-sep"></span>
+      <button class="btn btn-ghost btn-icon" type="button" id="tb-prev" aria-label="Previous page">{{ icon('chevron-up') }}</button>
+      <input type="text" inputmode="numeric" id="tb-page" class="tb-page num" aria-label="Page number">
+      <span class="muted num" id="tb-total">/ –</span>
+      <button class="btn btn-ghost btn-icon" type="button" id="tb-next" aria-label="Next page">{{ icon('chevron-down') }}</button>
+      <span class="tb-sep"></span>
+      <button class="btn btn-ghost btn-icon" type="button" id="tb-zoom-out" aria-label="Zoom out">{{ icon('minus') }}</button>
+      <select id="tb-zoom" aria-label="Zoom">
+        <option value="fit-width">Fit width</option>
+        <option value="fit-page">Fit page</option>
+        <option value="0.5">50%</option><option value="0.75">75%</option><option value="1">100%</option>
+        <option value="1.25">125%</option><option value="1.5">150%</option><option value="2">200%</option>
+        <option value="3">300%</option><option value="4">400%</option>
+        <option value="custom" hidden>Custom</option>
+      </select>
+      <button class="btn btn-ghost btn-icon" type="button" id="tb-zoom-in" aria-label="Zoom in">{{ icon('plus') }}</button>
+      <button class="btn btn-ghost btn-icon" type="button" id="tb-view-rotate" aria-label="Rotate view (does not change the file)" title="Rotate view (does not change the file)">{{ icon('rotate') }}</button>
+      <span class="tb-sep"></span>
+      <div class="tb-search">
+        {{ icon('search') }}
+        <input type="search" id="tb-search" placeholder="Find in document" aria-label="Find in document">
+      </div>
+      <span class="spacer"></span>
+      <button class="btn btn-sm" type="button" id="tb-annotate" aria-pressed="false" title="Add text, images, highlights, notes and drawings">{{ icon('intelligence') }}Annotate</button>
+      <button class="btn btn-sm" type="button" id="tb-redact" aria-pressed="false" title="Permanently remove content from a copy of this document">{{ icon('lock') }}Redact</button>
+      <button class="btn btn-ghost btn-icon" type="button" id="tb-print" aria-label="Print" title="Print">{{ icon('workspace') }}</button>
+      <button class="btn btn-sm" type="button" id="tb-download" aria-haspopup="menu">{{ icon('download') }}Download</button>
+    </div>
+
+    <div class="ws-editbar" role="toolbar" aria-label="Page operations">
+      <span class="ws-scope" id="ed-scope">Page 1</span>
+      <button class="btn btn-sm" type="button" data-op="rotate-left">{{ icon('rotate-left') }}Rotate left</button>
+      <button class="btn btn-sm" type="button" data-op="rotate-right">{{ icon('rotate') }}Rotate right</button>
+      <button class="btn btn-sm" type="button" data-op="duplicate">{{ icon('copy') }}Duplicate</button>
+      <button class="btn btn-sm" type="button" data-op="extract">{{ icon('extract') }}Extract</button>
+      <button class="btn btn-sm" type="button" data-op="delete">{{ icon('trash') }}Delete</button>
+      <span class="tb-sep"></span>
+      <button class="btn btn-sm" type="button" data-op="insert-blank">{{ icon('blank') }}Blank page</button>
+      <button class="btn btn-sm" type="button" data-op="split">{{ icon('split') }}Split</button>
+      <button class="btn btn-sm" type="button" data-op="compress">{{ icon('compress') }}Compress</button>
+      <button class="btn btn-sm" type="button" id="ed-more" aria-haspopup="menu">{{ icon('more') }}More</button>
+      <span class="spacer"></span>
+      <span class="ws-busy" id="ed-busy" hidden><span class="spinner"></span><span id="ed-busy-text">Working…</span></span>
+      <span class="muted small" id="ed-note">Every change is saved as a new version. The original is kept.</span>
+    </div>
+
+    <div class="ws-annbar" id="annbar" role="toolbar" aria-label="Annotate">
+      <button class="btn btn-sm" type="button" data-tool="select" aria-pressed="true" title="Select, move or delete an item you have not saved yet">Select</button>
+      <span class="group-label" data-for="annotate" title="Drawn onto the page. Part of the page in the saved version.">Add to page</span>
+      <button class="btn btn-sm" type="button" data-for="annotate" data-tool="text" aria-pressed="false">Text</button>
+      <button class="btn btn-sm" type="button" data-for="annotate" data-tool="image" aria-pressed="false">Image</button>
+      <button class="btn btn-sm" type="button" data-for="annotate" data-tool="stamp" aria-pressed="false">Stamp</button>
+      <button class="btn btn-sm" type="button" data-for="annotate" data-tool="signature" aria-pressed="false" title="Draw your signature and place it as a picture. Not a cryptographic signature.">Signature</button>
+      <span class="group-label" data-for="annotate" title="Standard PDF annotations. They can be removed later.">Annotate</span>
+      <button class="btn btn-sm" type="button" data-for="annotate" data-tool="highlight" aria-pressed="false" title="Select text to highlight it">Highlight</button>
+      <button class="btn btn-sm" type="button" data-for="annotate" data-tool="note" aria-pressed="false">Note</button>
+      <button class="btn btn-sm" type="button" data-for="annotate" data-tool="rect" aria-pressed="false">Rectangle</button>
+      <button class="btn btn-sm" type="button" data-for="annotate" data-tool="ellipse" aria-pressed="false">Ellipse</button>
+      <button class="btn btn-sm" type="button" data-for="annotate" data-tool="line" aria-pressed="false">Line</button>
+      <button class="btn btn-sm" type="button" data-for="annotate" data-tool="arrow" aria-pressed="false">Arrow</button>
+      <button class="btn btn-sm" type="button" data-for="annotate" data-tool="ink" aria-pressed="false">Draw</button>
+      <span class="tb-sep" data-for="annotate"></span>
+      <input type="color" id="ann-color" value="#b3261e" aria-label="Colour" data-for="annotate">
+      <select id="ann-width" aria-label="Line width" data-for="annotate">
+        <option value="1">Thin</option><option value="2" selected>Medium</option><option value="4">Thick</option><option value="8">Heavy</option>
+      </select>
+      <button class="btn btn-sm" type="button" data-for="redact" data-tool="redact" aria-pressed="false">Mark area to redact</button>
+      <span class="group-label" data-for="redact">Pages you mark become images; the content under each box is removed</span>
+      <span class="tb-sep"></span>
+      <button class="btn btn-sm" type="button" id="ann-undo" disabled>Undo</button>
+      <button class="btn btn-sm" type="button" id="ann-redo" disabled>Redo</button>
+      <button class="btn btn-sm" type="button" id="ann-delete" disabled>Delete item</button>
+      <span class="spacer"></span>
+      <span class="pending" id="ann-pending">Nothing added yet</span>
+      <button class="btn btn-sm" type="button" id="ann-discard">Close</button>
+      <button class="btn btn-sm btn-primary" type="button" id="ann-save" disabled>Save as new version</button>
+      <input type="file" id="ann-image-file" accept="image/png,image/jpeg" hidden>
+    </div>
+
+    <div class="ws-body">
+      <aside class="ws-side" id="ws-side" aria-label="Document panel">
+        <div class="tabs" role="tablist" aria-label="Panel">
+          <button class="tab" role="tab" type="button" data-panel="pages" aria-selected="true">Pages</button>
+          <button class="tab" role="tab" type="button" data-panel="outline" aria-selected="false">Outline</button>
+          <button class="tab" role="tab" type="button" data-panel="search" aria-selected="false">Find</button>
+          <button class="tab" role="tab" type="button" data-panel="history" aria-selected="false">Versions</button>
+          <button class="tab" role="tab" type="button" data-panel="info" aria-selected="false">Info</button>
+        </div>
+        <div class="ws-panel" data-panel="pages">
+          <p class="ws-hint">Click to go to a page. Ctrl or Shift-click to select several. Drag to reorder.</p>
+          <ol class="thumbs" id="thumbs" aria-label="Pages"></ol>
+        </div>
+        <div class="ws-panel" data-panel="outline" hidden><div id="outline"></div></div>
+        <div class="ws-panel" data-panel="search" hidden>
+          <p class="ws-hint" id="search-status">Type in the Find box above.</p>
+          <ol class="results" id="search-results"></ol>
+        </div>
+        <div class="ws-panel" data-panel="history" hidden><ol class="versions" id="versions"></ol></div>
+        <div class="ws-panel" data-panel="info" hidden><div id="info"></div></div>
+      </aside>
+      <div class="ws-view" id="viewer" tabindex="0" aria-label="Document"></div>
+    </div>
+  </div>
+</div>
+
+<dialog id="sign-dialog" class="dialog" aria-labelledby="sign-title" closedby="none" style="width:min(600px,calc(100vw - 32px))">
+  <form method="dialog">
+    <h2 id="sign-title">Draw your signature</h2>
+    <p>This places a picture of your signature on the page. It is a <strong>visual signature</strong>, not a cryptographic digital signature: it does not prove who signed or that the document is unchanged.</p>
+    <canvas id="sign-pad" width="1080" height="360" aria-label="Signature drawing area" style="width:100%;aspect-ratio:3/1;background:#fff;border:1px dashed var(--line-strong);border-radius:8px;touch-action:none;cursor:crosshair"></canvas>
+    <p id="sign-error" class="field-error" role="alert"></p>
+    <div class="dialog-actions">
+      <button type="button" class="btn" id="sign-clear" style="margin-right:auto">Clear</button>
+      <button value="cancel" class="btn" formnovalidate>Cancel</button>
+      <button value="ok" class="btn btn-primary">Place signature</button>
+    </div>
+  </form>
+</dialog>
+{% endblock %}
+{% block scripts %}<script type="module" src="/static/js/workspace.js"></script>{% endblock %}

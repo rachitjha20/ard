@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  {# Blocking and tiny on purpose: applies a saved theme before first paint. #}
+  <script src="/static/js/theme-init.js"></script>
+  <title>{% block title %}ARD{% endblock %}</title>
+  <link rel="icon" href="/static/icons/ard.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/static/css/app.css">
+  {% block head %}{% endblock %}
+</head>
+<body data-page="{{ page }}">
+  {% include "_icons.html" %}
+  {% macro icon(name) %}<svg class="icon" aria-hidden="true"><use href="#i-{{ name }}"/></svg>{% endmacro %}
+  <a class="skip-link" href="#main">Skip to content</a>
+  <div class="shell">
+    <nav class="rail" aria-label="Main">
+      <a class="brand" href="/" aria-label="ARD home">
+        <span class="brand-mark" aria-hidden="true">A</span><span class="brand-name">ARD</span>
+      </a>
+      <ul class="rail-list">
+        {% for item in navigation %}
+        <li>
+          <a href="{{ item.href }}" class="rail-link" {% if item.id == page %}aria-current="page"{% endif %}>
+            {{ icon(item.icon) }}<span>{{ item.label }}</span>
+          </a>
+        </li>
+        {% endfor %}
+      </ul>
+      <div class="rail-foot">
+        <a class="rail-status" href="/trust#guardian" id="rail-guardian" title="ARD Guardian">
+          <span class="dot" data-state="normal"></span><span id="rail-guardian-text">Guardian</span>
+        </a>
+        <span class="rail-version">v{{ version }} · local</span>
+      </div>
+    </nav>
+    <div class="content">
+      <div class="banner banner-warn" id="safe-mode-banner" role="alert" {% if not safe_mode %}hidden{% endif %}>
+        {{ icon('alert') }}
+        <div><strong>Safe mode.</strong> Editing is switched off and nothing has been deleted.
+          <span id="safe-mode-reason">{{ safe_mode_reason or '' }}</span>
+          <a href="/trust#audit">See details</a></div>
+      </div>
+      <main id="main" tabindex="-1">{% block content %}{% endblock %}</main>
+    </div>
+  </div>
+
+  <div class="toasts" id="toasts" role="status" aria-live="polite"></div>
+
+  <dialog id="confirm-dialog" class="dialog" aria-labelledby="confirm-title" closedby="any">
+    <form method="dialog">
+      <h2 id="confirm-title"></h2>
+      <p id="confirm-message"></p>
+      <div class="dialog-actions">
+        <button value="cancel" class="btn" autofocus>Cancel</button>
+        <button value="ok" class="btn btn-primary" id="confirm-ok">OK</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="form-dialog" class="dialog" aria-labelledby="form-title" closedby="any">
+    <form method="dialog" id="form-dialog-form">
+      <h2 id="form-title"></h2>
+      <p id="form-intro" class="muted"></p>
+      <div id="form-fields" class="fields"></div>
+      <p id="form-error" class="field-error" role="alert"></p>
+      <div class="dialog-actions">
+        <button value="cancel" class="btn" formnovalidate>Cancel</button>
+        <button value="ok" class="btn btn-primary" id="form-ok">OK</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script type="module" src="/static/js/shell.js"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Home · ARD{% endblock %}
+{% block content %}
+<div class="page" id="home-drop">
+  <header class="page-head">
+    <div>
+      <h1>Your documents. Your intelligence. Your control.</h1>
+      <p>Everything here runs on this computer. No account, no upload, no telemetry.</p>
+    </div>
+    <div class="row">
+      <input type="file" id="home-file" accept="application/pdf,.pdf,.doc,.docx,.odt,.rtf,.xls,.xlsx,.ods,.ppt,.pptx,.odp" multiple hidden>
+      <button class="btn btn-primary" id="home-import" type="button">{{ icon('upload') }}Import PDFs</button>
+    </div>
+  </header>
+
+  <section class="grid grid-stats" aria-label="Overview">
+    <div class="card stat"><span class="label">Documents</span><span class="value" id="stat-documents">–</span><span class="sub" id="stat-trashed"></span></div>
+    <div class="card stat"><span class="label">Stored originals</span><span class="value" id="stat-size">–</span><span class="sub">kept unchanged</span></div>
+    <div class="card stat"><span class="label">Jobs running</span><span class="value" id="stat-jobs">–</span><span class="sub"><a href="/automation">View queue</a></span></div>
+    <div class="card stat"><span class="label">ARD Guardian</span><span class="value" id="stat-guardian">–</span><span class="sub"><a href="/trust#guardian">Resource limits</a></span></div>
+  </section>
+
+  <section class="grid" aria-labelledby="recent-title">
+    <div class="row"><h2 id="recent-title">Recently imported</h2><span class="spacer"></span><a href="/library">Open library</a></div>
+    <div class="doc-grid" id="recent"></div>
+    <div class="empty" id="recent-empty" hidden>
+      {{ icon('upload') }}
+      <h2>Start by importing a PDF</h2>
+      <p>Drop files anywhere on this page, or use Import PDFs. ARD keeps its own copy and never changes your file.</p>
+    </div>
+  </section>
+
+  <section class="card" aria-labelledby="ready-title">
+    <h2 id="ready-title">What works today</h2>
+    <dl class="kv" id="ready"></dl>
+  </section>
+</div>
+{% endblock %}
+{% block scripts %}<script type="module" src="/static/js/home.js"></script>{% endblock %}

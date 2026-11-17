@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Library · ARD{% endblock %}
+{% block content %}
+<div class="page" id="library-drop">
+  <header class="page-head">
+    <div>
+      <h1>Library</h1>
+      <p id="library-count" class="muted">&nbsp;</p>
+    </div>
+    <div class="row">
+      <input type="file" id="library-file" accept="application/pdf,.pdf,.doc,.docx,.odt,.rtf,.xls,.xlsx,.ods,.ppt,.pptx,.odp" multiple hidden>
+      <button class="btn btn-primary" id="library-import" type="button">{{ icon('upload') }}Import PDFs</button>
+    </div>
+  </header>
+
+  <div class="lib-bar">
+    <div class="search">
+      {{ icon('search') }}
+      <input type="search" id="library-search" placeholder="Search names and text inside documents" aria-label="Search names and text inside documents">
+    </div>
+    <label class="row small muted" for="library-category">Category
+      <select id="library-category"><option value="">All categories</option></select>
+    </label>
+    <label class="row small muted" for="library-tag" id="library-tag-wrap" hidden>Tag
+      <select id="library-tag"><option value="">Any tag</option></select>
+    </label>
+    <label class="row small muted" for="library-sort">Sort
+      <select id="library-sort">
+        <option value="imported">Import date</option>
+        <option value="edited">Last edited in ARD</option>
+        <option value="name">Name</option>
+        <option value="size">Size</option>
+      </select>
+    </label>
+  </div>
+  <div class="chips" id="library-views" role="group" aria-label="Show">
+    <button class="chip" type="button" data-view="all" aria-pressed="true">All</button>
+    <button class="chip" type="button" data-view="recent_added" aria-pressed="false">Recently added</button>
+    <button class="chip" type="button" data-view="recent_modified" aria-pressed="false">Recently modified</button>
+    <button class="chip" type="button" data-view="favorites" aria-pressed="false">Favorites</button>
+    <button class="chip" type="button" data-view="needs_ocr" aria-pressed="false">Needs OCR</button>
+    <button class="chip" type="button" data-view="scanned" aria-pressed="false">Scanned</button>
+    <button class="chip" type="button" data-view="unclassified" aria-pressed="false">Unclassified</button>
+    <button class="chip" type="button" data-view="large" aria-pressed="false">Large files</button>
+    <button class="chip" type="button" data-view="protected" aria-pressed="false">Password-protected</button>
+    <button class="chip" type="button" data-view="duplicates" aria-pressed="false">Duplicate candidates</button>
+    <button class="chip" type="button" data-view="trash" aria-pressed="false">Trash</button>
+  </div>
+  <p class="muted small" id="library-indexing" hidden></p>
+
+  <div class="doc-grid" id="library-grid"></div>
+  <div class="empty" id="library-empty" hidden>
+    {{ icon('library') }}
+    <h2 id="library-empty-title">Nothing here yet</h2>
+    <p id="library-empty-text">Drop PDF files on this page, or use Import PDFs.</p>
+  </div>
+
+  <div class="select-bar" id="select-bar" hidden>
+    <span id="select-count"></span>
+    <button class="btn btn-sm" type="button" id="select-merge">{{ icon('merge') }}Merge</button>
+    <button class="btn btn-sm" type="button" id="select-open">{{ icon('workspace') }}Open</button>
+    <button class="btn btn-sm" type="button" id="select-trash">{{ icon('trash') }}Move to trash</button>
+    <button class="btn btn-sm btn-icon" type="button" id="select-clear" aria-label="Clear selection">{{ icon('close') }}</button>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}<script type="module" src="/static/js/library.js"></script>{% endblock %}
