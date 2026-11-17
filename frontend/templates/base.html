@@ -29,6 +29,7 @@
         </li>
         {% endfor %}
       </ul>
+      <a href="/guide" class="rail-link rail-guide" {% if page == "guide" %}aria-current="page"{% endif %}>{{ icon('info') }}<span>Guide</span></a>
       <div class="rail-foot">
         <a class="rail-status" href="/trust#guardian" id="rail-guardian" title="ARD Guardian">
           <span class="dot" data-state="normal"></span><span id="rail-guardian-text">Guardian</span>

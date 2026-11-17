@@ -1,0 +1,203 @@
+{% extends "base.html" %}
+{% block title %}Guide · ARD{% endblock %}
+{% block content %}
+<div class="page guide">
+  <header class="page-head">
+    <div>
+      <h1>Guide</h1>
+      <p>What is where, and how to do the common things. Everything runs on this computer; nothing is uploaded.</p>
+    </div>
+  </header>
+
+  <nav class="card guide-toc" aria-label="On this page">
+    <a href="#where">Where things are</a>
+    <a href="#rules">Three rules ARD follows</a>
+    <a href="#start">Getting documents in</a>
+    <a href="#read">Reading and finding</a>
+    <a href="#pages">Changing pages</a>
+    <a href="#text">Editing and adding text</a>
+    <a href="#annotate">Annotating</a>
+    <a href="#forms">Forms and signatures</a>
+    <a href="#protect">Protecting and redacting</a>
+    <a href="#scans">Scanned documents</a>
+    <a href="#organise">Organising the library</a>
+    <a href="#undo">Undoing and going back</a>
+    <a href="#export">Getting documents out</a>
+    <a href="#keys">Keyboard shortcuts</a>
+    <a href="#limits">What ARD does not do</a>
+  </nav>
+
+  <section class="card" id="where">
+    <h2>Where things are</h2>
+    <div class="table-wrap"><table class="table">
+      <thead><tr><th>Section</th><th>What you do there</th></tr></thead>
+      <tbody>
+        <tr><td><a href="/">Home</a></td><td>Import files, see recent documents and what is available on this computer.</td></tr>
+        <tr><td><a href="/library">Library</a></td><td>Every document. Search inside them, filter by category, tag or album, review duplicate candidates, merge, trash and restore.</td></tr>
+        <tr><td><a href="/workspace">Workspace</a></td><td>Open documents in tabs. Read, search, rearrange pages, edit text, annotate, fill forms, sign, protect, redact, run OCR, download.</td></tr>
+        <tr><td><a href="/intelligence">Intelligence</a></td><td>Shows which text-recognition and AI engines are installed. AI features are not built yet and will always be optional.</td></tr>
+        <tr><td><a href="/automation">Automation</a></td><td>The job queue: what is running, what finished, and a Cancel button.</td></tr>
+        <tr><td><a href="/trust">Trust &amp; Settings</a></td><td>The audit log, resource limits (Guardian), installed engines, light or dark theme, diagnostics.</td></tr>
+      </tbody>
+    </table></div>
+    <h3>Inside the Workspace</h3>
+    <dl class="kv">
+      <dt>Tabs (top)</dt><dd>One per open document. <strong>Open</strong> on the right goes to the Library to add another.</dd>
+      <dt>Top bar</dt><dd>Side panel on/off, page number, zoom, rotate view, <strong>Find</strong>, then <strong>Annotate</strong>, <strong>Redact</strong>, print and <strong>Download</strong>.</dd>
+      <dt>Second bar</dt><dd>Page actions: rotate, duplicate, extract, delete, blank page, split, compress. Everything else is under <strong>More</strong>.</dd>
+      <dt>Side panel</dt><dd><strong>Pages</strong> (thumbnails), <strong>Outline</strong> (bookmarks), <strong>Find</strong> (search results), <strong>Versions</strong> (history), <strong>Info</strong> (details, category, integrity, signatures, PDF/A).</dd>
+    </dl>
+  </section>
+
+  <section class="card" id="rules">
+    <h2>Three rules ARD follows</h2>
+    <ol>
+      <li><strong>Your file is never changed.</strong> ARD keeps its own copy. Every change is saved as a new <em>version</em>; the imported file and all earlier versions stay as they were.</li>
+      <li><strong>Nothing leaves this computer.</strong> No account, no upload, no usage tracking.</li>
+      <li><strong>ARD says what it actually did.</strong> If a result is a best guess (OCR, categories), or something could not be done exactly as asked (a font, a signature it cannot vouch for), you are told.</li>
+    </ol>
+  </section>
+
+  <section class="card" id="start">
+    <h2>Getting documents in</h2>
+    <ul>
+      <li>Choose <strong>Import PDFs</strong> on Home or in the Library, or drop files onto the window.</li>
+      <li>Word, Excel, PowerPoint, OpenDocument and RTF files are converted to PDF as they are imported, if LibreOffice is installed. The layout can differ slightly from the original program.</li>
+      <li>Importing the same file twice does not create a second copy.</li>
+      <li>Password-protected PDFs can be imported and read. To change one, remove the protection first (Workspace → More).</li>
+    </ul>
+  </section>
+
+  <section class="card" id="read">
+    <h2>Reading and finding</h2>
+    <ul>
+      <li><strong>Inside one document:</strong> type in <strong>Find in document</strong> (or press Ctrl+F). Results appear in the side panel; click one to jump to the page.</li>
+      <li><strong>Across all documents:</strong> use the search box in the Library. Each result shows the page where the words were found and opens there. Parts of words work, in any language.</li>
+      <li>Scanned pages have no text to find until you run text recognition; see <a href="#scans">Scanned documents</a>.</li>
+      <li>Click a note or highlighted comment on a page to read it.</li>
+    </ul>
+  </section>
+
+  <section class="card" id="pages">
+    <h2>Changing pages</h2>
+    <ul>
+      <li>Actions apply to the page you are looking at. To act on several, select them in the <strong>Pages</strong> panel with Ctrl-click or Shift-click; the yellow label on the left of the bar shows what will be affected.</li>
+      <li><strong>Reorder:</strong> drag thumbnails in the Pages panel.</li>
+      <li><strong>Extract</strong> and <strong>Split</strong> create new documents and leave this one as it is.</li>
+      <li><strong>Merge:</strong> in the Library, tick two or more documents and choose Merge.</li>
+      <li><strong>More</strong> has reverse order, crop, insert pages from another document, watermark, and headers, footers and page numbers.</li>
+    </ul>
+  </section>
+
+  <section class="card" id="text">
+    <h2>Editing and adding text</h2>
+    <h3>Change a line that is already there</h3>
+    <ol>
+      <li>Choose <strong>Annotate</strong>, then <strong>Edit text</strong>.</li>
+      <li>Click the line. ARD shows its text along with the font and size it detected.</li>
+      <li>Change the text and choose <strong>Apply</strong>. Repeat for other lines, then choose <strong>Save as new version</strong>.</li>
+    </ol>
+    <p>The original line is removed from the page and your text is drawn in the same place, size and colour. Font: ARD keeps the original font when it already contains every character you typed. A font stored inside a PDF usually holds only the characters that document uses, so if you type a character it lacks, ARD uses the closest standard font (same family, bold and italic) and tells you. You can also pick the font and size yourself.</p>
+    <p class="muted">Limits: one line at a time, Latin characters only, and other lines do not move, so a much longer line can run into what is beside it. Text that is part of a picture, or on a scanned page, cannot be edited this way.</p>
+    <h3>Add new text</h3>
+    <p>Choose <strong>Annotate</strong>, then <strong>Text</strong>, click where it should start, and type. Any language works; text outside the Latin alphabet is placed as a picture, so it looks right but cannot be searched.</p>
+  </section>
+
+  <section class="card" id="annotate">
+    <h2>Annotating</h2>
+    <p>Choose <strong>Annotate</strong>. Nothing in the document changes until you choose <strong>Save as new version</strong>; until then you can Undo, Redo, move items (with <strong>Select</strong>) or delete them.</p>
+    <dl class="kv">
+      <dt>Becomes part of the page</dt><dd>Edit text, Text, Image, Stamp, Signature (a drawn picture of your signature).</dd>
+      <dt>Can be removed later</dt><dd>Highlight (select the text), Note, Rectangle, Ellipse, Line, Arrow, Draw. Remove them with More → Remove annotations.</dd>
+    </dl>
+    <p class="muted">Putting a shape or picture over text does not delete the text underneath. To remove content, use Redact.</p>
+  </section>
+
+  <section class="card" id="forms">
+    <h2>Forms and signatures</h2>
+    <ul>
+      <li><strong>Fill in a form:</strong> More → Fill in form. Values can be exported and imported (More menu) as a file.</li>
+      <li><strong>Draw your signature:</strong> Annotate → Signature. This is a picture. It does not prove who signed.</li>
+      <li><strong>Sign with a certificate:</strong> More → Sign with a certificate, using your <code>.p12</code> or <code>.pfx</code> file. The file and its passphrase are used once and not kept.</li>
+      <li><strong>Check a signature:</strong> Info panel → Check signatures. <em>Valid</em> means intact and from a signer this computer trusts. <em>Unknown</em> means intact, but ARD cannot vouch for who signed. <em>Invalid</em> means the document or signature was altered.</li>
+      <li>Changing a signed document creates a version in which the signature no longer verifies. ARD warns you first and keeps the signed version.</li>
+    </ul>
+  </section>
+
+  <section class="card" id="protect">
+    <h2>Protecting and redacting</h2>
+    <ul>
+      <li><strong>Password:</strong> More → Password-protect. Only the <em>password to open</em> keeps the content private; “no printing” and “no copying” are requests that PDF programs are expected to honour. ARD cannot recover a forgotten password.</li>
+      <li><strong>Redact:</strong> choose <strong>Redact</strong>, drag over what must go, then <strong>Redact and verify</strong>. The content under each box is removed, and ARD checks the result before accepting it.</li>
+      <li><strong>Remove metadata:</strong> More → Remove metadata (title, author and similar).</li>
+    </ul>
+    <p class="muted">Two things to know about redaction: a redacted page becomes a picture, so its remaining text can no longer be selected; and ARD keeps the earlier, unredacted versions, so share only the file you download afterwards.</p>
+  </section>
+
+  <section class="card" id="scans">
+    <h2>Scanned documents</h2>
+    <ul>
+      <li>ARD marks scans that have no searchable text with <strong>Needs OCR</strong>. The Library has an album of them.</li>
+      <li>Open the document and choose More → <strong>Recognise text (OCR)</strong>, pick the language, and start. It runs in the background; you can keep working.</li>
+      <li>The page pictures are not changed; an invisible text layer is added, as a new version.</li>
+      <li>Recognised text can contain mistakes. Info → Searchable text → <strong>Page details</strong> lists each page with a confidence score and marks the ones worth checking.</li>
+      <li>This needs Tesseract. Trust &amp; Settings → Integrations shows whether it is installed and how to install it.</li>
+    </ul>
+  </section>
+
+  <section class="card" id="organise">
+    <h2>Organising the library</h2>
+    <ul>
+      <li><strong>Categories</strong> are suggestions made from words found in the document, shown with a question mark until you confirm or change them. Use a card's ⋯ menu → Category. Your choice is never overwritten.</li>
+      <li><strong>Tags:</strong> a card's ⋯ menu → Tags. Filter by tag with the Tag list.</li>
+      <li><strong>Albums</strong> are the buttons under the search box: Recently added, Needs OCR, Unclassified, Large files and so on.</li>
+      <li><strong>Duplicate candidates</strong> groups identical files, files with the same text, and files with very similar text. They are for you to review; ARD never deletes or merges anything by itself.</li>
+      <li>Documents are grouped by the month they were <em>imported</em>. Dates written inside a PDF are shown separately in the Info panel, because they can be wrong.</li>
+    </ul>
+  </section>
+
+  <section class="card" id="undo">
+    <h2>Undoing and going back</h2>
+    <ul>
+      <li>While annotating or redacting, <strong>Undo</strong> and <strong>Redo</strong> work on what you have not saved yet.</li>
+      <li>After saving, open the <strong>Versions</strong> panel. Any version can be downloaded, or made current again with <strong>Make current</strong>. History is never rewritten.</li>
+      <li><strong>Move to trash</strong> hides a document; its files stay on disk. Restore it from the Trash view in the Library.</li>
+    </ul>
+  </section>
+
+  <section class="card" id="export">
+    <h2>Getting documents out</h2>
+    <ul>
+      <li><strong>Download</strong> (Workspace, top right) saves the current version as a PDF, as plain text, or as page images in a zip file.</li>
+      <li>Older versions are downloaded from the Versions panel.</li>
+      <li>Print opens the PDF in the browser's own viewer, which prints every page.</li>
+    </ul>
+  </section>
+
+  <section class="card" id="keys">
+    <h2>Keyboard shortcuts</h2>
+    <dl class="kv">
+      <dt>Ctrl+F</dt><dd>Find in the open document</dd>
+      <dt>← → or Page Up / Page Down</dt><dd>Previous or next page</dd>
+      <dt>Home / End</dt><dd>First or last page</dd>
+      <dt>+ and −</dt><dd>Zoom in and out</dd>
+      <dt>Ctrl+Z, Ctrl+Shift+Z</dt><dd>Undo and redo while annotating</dd>
+      <dt>Delete</dt><dd>Remove the selected unsaved item</dd>
+      <dt>Esc</dt><dd>Back to Select while annotating; clear page selection otherwise</dd>
+    </dl>
+  </section>
+
+  <section class="card" id="limits">
+    <h2>What ARD does not do</h2>
+    <ul>
+      <li>It does not reflow paragraphs. Editing text works one line at a time.</li>
+      <li>It does not convert PDFs to Word, Excel or HTML, or make a file PDF/A.</li>
+      <li>It has no AI features yet: no summaries, no questions and answers.</li>
+      <li>It does not scan for viruses and never calls a file “clean”.</li>
+      <li>It is for one person on one computer. It does not sync, share or back up.</li>
+      <li>Signature checks are offline, so a certificate that has been revoked is not detected.</li>
+    </ul>
+    <p class="muted">Your documents are stored in ARD's data folder, shown under Trust &amp; Settings → Appearance &amp; diagnostics. Back that folder up yourself.</p>
+  </section>
+</div>
+{% endblock %}

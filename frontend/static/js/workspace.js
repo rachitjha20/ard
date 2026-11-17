@@ -100,6 +100,7 @@ async function loadDocument(page = 1) {
   const doc = await api(`/api/documents/${id}`);
   if (id !== state.activeId) return;
   state.doc = doc;
+  annotator.documentId = doc.id;
   const tab = state.tabs.find((item) => item.id === id);
   if (tab && tab.name !== doc.display_name) { tab.name = doc.display_name; saveTabs(); renderTabs(); }
   document.title = `${doc.display_name} · ARD`;
@@ -610,6 +611,7 @@ $("ed-more").addEventListener("click", (event) => {
 // ---------------------------------------------------------------- annotate mode
 const DRAW_HINTS = {
   select: "Click an item you added to select it, drag to move it, Delete to remove it.",
+  edit_text: "Click a line of text to change it. Its font, size and colour are kept.",
   text: "Click where the text should start.",
   image: "Click where the image's top-left corner should go.",
   stamp: "Click where the stamp should be centred.",
@@ -658,9 +660,15 @@ async function saveAnnotations() {
     await loadDocument(page);
     const report = result.report;
     const parts = [];
+    const edits = report.text_edits || [];
+    if (edits.length) parts.push(`${plural(edits.length, "line")} of text edited`);
     if (report.overlays) parts.push(`${plural(report.overlays, "item")} drawn onto the page`);
     if (report.annotations) parts.push(`${plural(report.annotations, "annotation")} added`);
     toast(`${parts.join(" and ")}. Saved as version ${result.version_number}.`, "success", 7000);
+    // Say plainly which font each edit ended up in, once per distinct outcome.
+    for (const explanation of [...new Set(edits.map((entry) => entry.explanation))].slice(0, 3)) {
+      toast(explanation, edits.every((entry) => entry.kept_original_font) ? "success" : "info", 11000);
+    }
   } catch (error) { showError(error); } finally { setBusy(false); }
 }
 

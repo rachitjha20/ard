@@ -404,7 +404,7 @@ def _build_annotation(pdf: Pdf, item: dict[str, Any], fonts: dict[str, pikepdf.O
 # ---------------------------------------------------------------------------
 # entry points
 # ---------------------------------------------------------------------------
-OVERLAY_TYPES = ("text", "image", "stamp")
+OVERLAY_TYPES = ("text", "image", "stamp", "edit_text")
 
 
 def apply_items(pdf: Pdf, params: dict[str, Any]) -> tuple[int, dict[str, Any]]:
@@ -424,6 +424,7 @@ def draw_items(pdf: Pdf, items: list[dict[str, Any]], images: dict[int, pikepdf.
     counts: dict[str, int] = {}
     overlays: dict[int, list[str]] = {}
     page_resources: dict[int, _Resources] = {}
+    edits: list[dict[str, Any]] = []
 
     for item in items:
         number = item["page"]
@@ -437,7 +438,16 @@ def draw_items(pdf: Pdf, items: list[dict[str, Any]], images: dict[int, pikepdf.
                 page_resources[number] = _Resources(pdf, _own_resources(pdf, page), fonts)
             res = page_resources[number]
             alpha = float(item.get("opacity", 1))
-            if kind == "text":
+            if kind == "edit_text":
+                from app.workers import pdf_textedit
+
+                try:
+                    found = pdf_textedit.remove_line(pdf, page, item)
+                except pdf_textedit.TextEditError as exc:
+                    raise AnnotateError(str(exc)) from exc
+                ops, detail = pdf_textedit.replacement_ops(found, item, res)
+                edits.append(detail)
+            elif kind == "text":
                 ops = _text_ops(item, res)
             elif kind == "stamp":
                 ops = _stamp_ops(item, res)
@@ -463,8 +473,10 @@ def draw_items(pdf: Pdf, items: list[dict[str, Any]], images: dict[int, pikepdf.
 
     overlay_count = sum(counts.get(kind, 0) for kind in OVERLAY_TYPES)
     annotation_count = sum(counts.values()) - overlay_count
+    overlay_count -= len(edits)
     return total, {
         "added": counts,
+        "text_edits": edits,
         "overlays": overlay_count,
         "annotations": annotation_count,
         "pages": sorted({item["page"] for item in items}),

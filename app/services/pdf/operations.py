@@ -255,7 +255,7 @@ def plan_split(params: dict[str, Any], total: int, max_parts: int = 500) -> list
 # ---------------------------------------------------------------------------
 # overlays and annotations
 # ---------------------------------------------------------------------------
-OVERLAY_TYPES = ("text", "image", "stamp")
+OVERLAY_TYPES = ("text", "image", "stamp", "edit_text")
 ANNOTATION_TYPES = ("highlight", "note", "rect", "ellipse", "line", "arrow", "ink")
 MAX_ITEMS = 2000
 MAX_POINTS = 200_000
@@ -396,6 +396,35 @@ def plan_annotations(items: Any, total: int, image_count: int = 0) -> list[dict[
                 raise OperationError("Font must be sans, serif or mono.")
             item["bold"] = bool(raw.get("bold", False))
             item["color"] = _color(raw.get("color"), "#000000")
+        elif kind == "edit_text":
+            item["origin"] = _point(raw.get("origin"), "The line position")
+            direction = _point(raw.get("direction"), "The line direction")
+            length = (direction[0] ** 2 + direction[1] ** 2) ** 0.5
+            if length < 1e-6:
+                raise OperationError("The line direction is not valid.")
+            item["direction"] = [direction[0] / length, direction[1] / length]
+            item["width"] = _number(raw.get("width"), "The line width", 0.5, _COORD_LIMIT)
+            item["height"] = _number(raw.get("height"), "The line height", 1, 2000)
+            new_text = _text(raw.get("text"), "The new text", 2000).replace("\n", " ")
+            try:
+                new_text.encode("cp1252")
+            except UnicodeEncodeError as exc:
+                raise OperationError(
+                    "Editing text in place supports Latin characters for now. For other scripts, cover the old "
+                    "text and use Add text, which places it as an image.") from exc
+            item["text"] = new_text
+            if raw.get("size") is not None:
+                item["size"] = _number(raw["size"], "Text size", 2, 800)
+            item["font"] = raw.get("font", "original")
+            if item["font"] not in ("original", "sans", "serif", "mono"):
+                raise OperationError("Font must be original, sans, serif or mono.")
+            for flag in ("bold", "italic"):
+                if raw.get(flag) is not None:
+                    if not isinstance(raw[flag], bool):
+                        raise OperationError("Bold and italic must be true or false.")
+                    item[flag] = raw[flag]
+            if raw.get("color"):
+                item["color"] = _color(raw["color"])
         elif kind == "image":
             item["box"] = _three_corner_box(raw.get("box"))
             index = raw.get("image")
@@ -448,6 +477,22 @@ def plan_annotations(items: Any, total: int, image_count: int = 0) -> list[dict[
             raise OperationError("That is too much drawing to save at once. Save in smaller steps.")
         clean.append(item)
     return clean
+
+
+def plan_text_line(page: Any, raw: Any, total: int) -> tuple[int, dict[str, Any]]:
+    """Validate the description of a line of text (used to look up its font before editing)."""
+    if isinstance(page, bool) or not isinstance(page, int) or page < 1 or page > total:
+        raise OperationError(f"Page {page} does not exist (the document has {total} pages).")
+    if not isinstance(raw, dict):
+        raise OperationError("The line position is missing.")
+    direction = _point(raw.get("direction"), "The line direction")
+    length = (direction[0] ** 2 + direction[1] ** 2) ** 0.5
+    if length < 1e-6:
+        raise OperationError("The line direction is not valid.")
+    return page, {"origin": _point(raw.get("origin"), "The line position"),
+                  "direction": [direction[0] / length, direction[1] / length],
+                  "width": _number(raw.get("width"), "The line width", 0.5, _COORD_LIMIT),
+                  "height": _number(raw.get("height"), "The line height", 1, 2000)}
 
 
 def plan_form_values(values: Any) -> dict[str, Any]:

@@ -237,7 +237,7 @@ def test_system_endpoints(client):
     assert diagnostics["database"]["quick_check"] == "ok" and diagnostics["telemetry"] == "none"
     assert client.put("/api/system/guardian", json={"profile": "eco"}).json()["profile"]["name"] == "eco"
     assert client.put("/api/system/guardian", json={"profile": "warp"}).status_code == 400
-    for path in ("/", "/library", "/workspace", "/intelligence", "/automation", "/trust"):
+    for path in ("/", "/library", "/workspace", "/intelligence", "/automation", "/trust", "/guide"):
         page = client.get(path)
         assert page.status_code == 200 and "<title>" in page.text
         assert "http://" not in page.text.replace("http://www.w3.org", "") and "https://" not in page.text, path

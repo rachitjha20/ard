@@ -90,6 +90,8 @@ code, .mono { font-family: var(--mono); font-size: .92em; }
 }
 .rail-link:hover { background: var(--surface-2); color: var(--text); }
 .rail-link[aria-current="page"] { background: var(--accent-soft); color: var(--accent); }
+.rail-guide { margin-top: auto; }
+.rail-guide + .rail-foot { margin-top: 0; }
 .rail-foot { margin-top: auto; display: grid; gap: 6px; padding: 8px 10px 2px; font-size: 12px; color: var(--text-3); }
 .rail-status { display: flex; align-items: center; gap: 8px; color: var(--text-2); text-decoration: none; }
 .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ok); flex: none; }
@@ -286,3 +288,13 @@ input[type="color"] { width: 34px; height: 30px; padding: 2px; border-radius: 8p
 .conf-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 3px; font-size: 12.5px; }
 .conf-list button { display: flex; justify-content: space-between; gap: 8px; width: 100%; border: 0; background: none; color: inherit; font: inherit; padding: 3px 6px; border-radius: 5px; cursor: pointer; text-align: left; }
 .conf-list button:hover { background: var(--surface-3); }
+
+.guide { max-width: 900px; }
+.guide .card { display: grid; gap: 10px; scroll-margin-top: 16px; }
+.guide .card > h2 { margin-bottom: 0; }
+.guide h3 { margin-top: 6px; }
+.guide ul, .guide ol { margin: 0; padding-left: 20px; display: grid; gap: 6px; }
+.guide p, .guide li, .guide dd { max-width: 75ch; }
+.guide-toc { display: flex !important; flex-wrap: wrap; gap: 6px 16px; }
+.guide dl.kv { grid-template-columns: minmax(140px, max-content) minmax(0, 1fr); }
+@media (max-width: 860px) { .rail-guide { margin-top: 0; } }

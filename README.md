@@ -45,6 +45,11 @@ Your documents are copied into ARD's data folder (Linux:
   rotate, crop, insert blank pages, insert pages from another document.
 - New documents from existing ones: merge, split by ranges or every N pages,
   extract selected pages.
+- Edit existing text one line at a time: ARD detects the line's font, size
+  and colour, removes the original line from the page and draws the new text
+  in its place. The original font is kept when it already contains every
+  character typed; otherwise the closest standard font is used and reported.
+- An in-app Guide (sidebar) explains where everything is and how to use it.
 - Annotate mode, saved as one new version when you choose:
   - *Drawn onto the page* (part of the page afterwards): text, PNG/JPEG
     images, stamps. This adds on top; it never edits or removes existing
@@ -117,8 +122,8 @@ Your documents are copied into ARD's data folder (Linux:
 ## Not built yet
 
 Docling layout and table extraction, entity extraction and entity search ·
-collections, correcting OCR text, cancelling a running OCR job · editing
-existing PDF text · resizing placed items, annotation
+collections, correcting OCR text, cancelling a running OCR job · reflowing
+paragraphs, embedding new fonts, editing non-Latin text in place · resizing placed items, annotation
 import/export · visible signature appearances, trusted timestamps, revocation
 checks · filling forms directly on the page · redaction that keeps the rest
 of the page as text, sensitive-data detection · conversion from PDF to

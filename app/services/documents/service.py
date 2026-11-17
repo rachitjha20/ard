@@ -30,9 +30,9 @@ from app.services.library.classifier import CATEGORIES as CATEGORY_LABELS
 from app.services.integrity.audit import append_event
 from app.services.pdf.operations import (
     OPERATIONS, OperationError, parse_page_ranges, plan_annotations, plan_operation, plan_protection,
-    plan_form_values, plan_redaction, plan_split,
+    plan_form_values, plan_redaction, plan_split, plan_text_line,
 )
-from app.workers import office_convert, pdf_forms, pdf_sign, pdf_tasks, pdfa_check
+from app.workers import office_convert, pdf_forms, pdf_sign, pdf_tasks, pdf_textedit, pdfa_check
 
 if TYPE_CHECKING:
     from app.core.context import AppContext
@@ -555,7 +555,7 @@ class DocumentService:
                     document_id=document.id, priority=PRIORITY_INTERACTIVE,
                     context={"actor": actor.name, "interface": actor.interface, "operation": "annotate",
                              "parameters": {"added": counts, "pages": sorted({item["page"] for item in clean})},
-                             "summary": f"Added {count} item{'s' if count != 1 else ''}",
+                             "summary": _annotate_summary(counts),
                              "parent_version_id": version.id, "new_version_id": new_version_id,
                              "output_key": output_key},
                 )
@@ -637,6 +637,24 @@ class DocumentService:
                 session, actor, document, version, "unlock", {}, operation="unlock", recorded={},
                 summary="Removed password protection", transient={"secrets": {"password": password}})
         return self._run(job_id)
+
+    def text_line_info(self, actor: Actor, document_id: str, page: Any, line: Any) -> dict[str, Any]:
+        """Font, size and colour of a line of text on a page. Read-only."""
+        with self.ctx.sessions() as session:
+            document = self._get(session, document_id)
+            self._authorize(session, actor, "document.read", document)
+            version = self._version(session, document)
+            total = self._require_editable(document, version)
+            try:
+                number, target = plan_text_line(page, line, total)
+            except OperationError as exc:
+                raise DocumentError(str(exc)) from exc
+            path = self.ctx.storage.resolve(version.storage_key)
+        try:
+            return self.ctx.jobs.call(pdf_textedit.describe_line, {"path": str(path), "page": number, "target": target})
+        except Exception as exc:
+            log.warning("worker call failed", extra={"data": {"error": f"{exc.__class__.__name__}: {exc}"[:300]}})
+            raise DocumentError("This line could not be examined.") from exc
 
     # ------------------------------------------------------------------ forms
     def _readable_source(self, session: Session, actor: Actor, document_id: str) -> tuple[Document, DocumentVersion, Path]:
@@ -1021,6 +1039,17 @@ class DocumentService:
         append_event(session, actor=context.get("actor", "system"), interface=context.get("interface", "system"),
                      action="document.operate", outcome=job.status, document_id=job.document_id,
                      details={"operation": context.get("operation"), "job": job.id, "error": job.error})
+
+
+def _annotate_summary(counts: dict[str, int]) -> str:
+    edits = counts.get("edit_text", 0)
+    added = sum(counts.values()) - edits
+    parts = []
+    if edits:
+        parts.append(f"Edited {edits} line{'s' if edits != 1 else ''} of text")
+    if added:
+        parts.append(f"{'added' if parts else 'Added'} {added} item{'s' if added != 1 else ''}")
+    return " and ".join(parts)
 
 
 def _describe_pages(pages: list[int]) -> str:

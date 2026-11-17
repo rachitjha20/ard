@@ -94,6 +94,8 @@ vulnerabilities.
 - **Cropping, covering and metadata removal are not redaction.** Cropped
   content stays in the file, and a shape, image or stamp placed over text
   does not remove the text underneath; earlier versions keep removed metadata.
+- **Editing a line removes it from the new version only.** The old wording
+  stays in earlier versions, which ARD keeps. Line editing is not redaction.
 - **Text overlays use the standard PDF fonts** (Latin, Windows-1252). Text in
   other scripts, including Hindi, is placed as an image: it looks right but is
   not searchable. Use Redact to remove content.

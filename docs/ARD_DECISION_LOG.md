@@ -171,6 +171,21 @@ two-step hOCR functions are private in the installed version.\
 **Status:** Implemented 17 November 2026. Revisit if OCRmyPDF publishes
 the hOCR pipeline.
 
+## D-026 --- Editing existing text
+
+**Decision:** Existing text is edited one line at a time by removing that
+line's drawing instructions from the page content and drawing the
+replacement at the same origin, size and colour. The original font is
+reused only when it is a simple Latin font that already contains every
+character of the new text; otherwise the closest standard font is used and
+the report says so. Lines that cannot be edited safely are refused with a
+reason rather than approximated.\
+**Reason:** The blueprint requires ARD to distinguish original-object
+editing from overlays and to disclose limits. Subset fonts in PDFs lack
+glyphs for new characters, so "always the same font" cannot be promised.\
+**Status:** Implemented 17 November 2026. Embedding a matching system font
+and paragraph reflow are not built.
+
 ## Open decisions
 
 1.  Final trademark/domain/repository clearance for ARD.

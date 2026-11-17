@@ -58,6 +58,11 @@ def automation(request: Request) -> HTMLResponse:
     return _render(request, "automation.html", "automation")
 
 
+@router.get("/guide", response_class=HTMLResponse)
+def guide(request: Request) -> HTMLResponse:
+    return _render(request, "guide.html", "guide")
+
+
 @router.get("/trust", response_class=HTMLResponse)
 def trust(request: Request) -> HTMLResponse:
     return _render(request, "trust.html", "trust")

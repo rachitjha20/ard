@@ -64,6 +64,11 @@ class UnlockRequest(BaseModel):
     password: str = Field(max_length=1000)
 
 
+class TextLineRequest(BaseModel):
+    page: int = Field(ge=1)
+    line: dict[str, Any]
+
+
 class FormValues(BaseModel):
     values: dict[str, Any] = Field(min_length=1, max_length=5000)
 
@@ -294,3 +299,10 @@ def sign(document_id: str, certificate: UploadFile = File(...), passphrase: str 
 def get_pdfa(document_id: str, actor: Actor = Depends(get_actor),
              documents: DocumentService = Depends(get_documents)) -> dict[str, Any]:
     return documents.pdfa_report(actor, document_id)
+
+
+@router.post("/{document_id}/text-line")
+def text_line(document_id: str, body: TextLineRequest, actor: Actor = Depends(get_actor),
+              documents: DocumentService = Depends(get_documents)) -> dict[str, Any]:
+    """Look up the font, size and colour of a line of text. Changes nothing."""
+    return documents.text_line_info(actor, document_id, body.page, body.line)

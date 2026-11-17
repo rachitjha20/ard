@@ -5,11 +5,11 @@
 // Coordinates are kept in PDF points, so items stay put when the zoom or the
 // view rotation changes.
 
-import { formDialog, toast } from "./api.js";
+import { api, formDialog, toast } from "./api.js";
 
 const SVG = "http://www.w3.org/2000/svg";
 const DRAG_TOOLS = ["rect", "ellipse", "line", "arrow", "ink", "redact"];
-const CLICK_TOOLS = ["text", "image", "stamp", "note", "signature"];
+const CLICK_TOOLS = ["text", "image", "stamp", "note", "signature", "edit_text"];
 const STAMPS = ["APPROVED", "DRAFT", "CONFIDENTIAL", "REVIEWED", "COPY", "VOID"];
 const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
 
@@ -38,6 +38,7 @@ const dist = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1]);
 /** Every point of an item, mapped through fn (used for moving). */
 function mapPoints(item, fn) {
   const copy = structuredClone(item);
+  if (copy.type === "edit_text") return copy;        // an edited line stays where the original line is
   if (copy.box) for (const key of ["tl", "tr", "bl"]) copy.box[key] = fn(copy.box[key]);
   if (copy.p1) { copy.p1 = fn(copy.p1); copy.p2 = fn(copy.p2); }
   if (copy.points) copy.points = copy.points.map(fn);
@@ -59,6 +60,7 @@ export class Annotator extends EventTarget {
     this.color = "#b3261e";
     this.width = 2;
     this.selectedId = null;
+    this.documentId = null;       // set by the workspace when a document is opened
     this._nextId = 1;
     this._drag = null;
 
@@ -144,7 +146,7 @@ export class Annotator extends EventTarget {
   payload() {
     const images = [];
     const items = this.items.map((item) => {
-      const { id, href, alt, ...rest } = item;
+      const { id, href, alt, preview, ...rest } = item;
       if (item.type === "image") {
         let index = images.indexOf(href);
         if (index === -1) { images.push(href); index = images.length - 1; }
@@ -188,6 +190,22 @@ export class Annotator extends EventTarget {
     const P = (point) => viewport.convertToViewportPoint(point[0], point[1]);
     const scale = viewport.scale;
     const opacity = item.opacity ?? 1;
+
+    if (item.type === "edit_text") {
+      // Preview only: the saved file has the old line removed, not covered.
+      const start = P(item.origin);
+      const end = P([item.origin[0] + item.direction[0] * item.width, item.origin[1] + item.direction[1] * item.width]);
+      const ex = [(end[0] - start[0]) / item.width, (end[1] - start[1]) / item.width];
+      const size = item.preview.size, family = FONT_CSS[item.preview.family] || FONT_CSS.sans;
+      const measure = document.createElement("canvas").getContext("2d");
+      measure.font = `${item.preview.bold ? "bold " : ""}${size}px ${family}`;
+      const cover = Math.max(item.width, measure.measureText(item.text).width) + 3;
+      return el("g", { transform: `matrix(${ex[0]} ${ex[1]} ${-ex[1]} ${ex[0]} ${start[0]} ${start[1]})` },
+        el("rect", { class: "edit-cover", x: -1.5, y: -size * 0.9, width: cover, height: size * 1.2, "stroke-width": 1 / scale }),
+        el("text", { x: 0, y: 0, "font-size": size, fill: item.preview.color || "#111", "font-family": family, "font-weight": item.preview.bold ? 700 : 400,
+          "font-style": item.preview.italic ? "italic" : "normal", "xml:space": "preserve" }, item.text),
+        el("title", {}, `Was: ${item.preview.oldText}`));
+    }
 
     if (item.box) {
       const tl = P(item.box.tl), tr = P(item.box.tr), bl = P(item.box.bl);
@@ -283,6 +301,7 @@ export class Annotator extends EventTarget {
       const id = Number(node.dataset.id);
       this.select(id);
       const original = this.items.find((item) => item.id === id);
+      if (original.type === "edit_text") return;       // select only; it cannot be dragged away from its line
       const before = structuredClone(this.items);
       let moved = false;
       const move = (moveEvent) => {
@@ -357,6 +376,8 @@ export class Annotator extends EventTarget {
       tr: viewport.convertToPdfPoint(x + widthPts * scale, y),
       bl: viewport.convertToPdfPoint(x, y + heightPts * scale),
     });
+
+    if (tool === "edit_text") { await this._editLine(number, viewport, at); return; }
 
     if (tool === "note") {
       const values = await formDialog({
@@ -461,6 +482,97 @@ export class Annotator extends EventTarget {
     const width = Math.min(240, pageWidth * 0.6, image.naturalWidth);
     const height = width * image.naturalHeight / image.naturalWidth;
     this.add({ type: "image", page: number, box: boxAt(at[0], at[1], width, height), href });
+  }
+
+  /**
+   * Edit text tool. Finds the run of text under the click, shows it with its detected font and size,
+   * and queues a replacement. On save the server removes the original line and draws the new one.
+   */
+  async _editLine(number, viewport, at) {
+    const page = await this.viewer.pdf.getPage(number);
+    const content = await page.getTextContent();
+    const point = viewport.convertToPdfPoint(at[0], at[1]);
+    const runs = content.items.filter((item) => item.str && item.str.trim() && item.width > 0).map((item) => {
+      const [a, b, c, d, e, f] = item.transform;
+      const along = Math.hypot(a, b) || 1, size = Math.hypot(c, d) || item.height || 1;
+      return { item, origin: [e, f], ex: [a / along, b / along], up: [c / size, d / size], size, width: item.width };
+    });
+    const project = (run, p) => [(p[0] - run.origin[0]) * run.ex[0] + (p[1] - run.origin[1]) * run.ex[1],
+      (p[0] - run.origin[0]) * run.up[0] + (p[1] - run.origin[1]) * run.up[1]];
+    const hit = runs.find((run) => { const [x, y] = project(run, point); return x >= -2 && x <= run.width + 2 && y >= -0.3 * run.size && y <= run.size; });
+    if (!hit) throw new Error("There is no text there to edit. Click directly on a line of text. Scanned pages have no editable text.");
+
+    // Grow the run sideways over neighbouring pieces on the same baseline in the same font.
+    const same = runs.filter((run) => run.item.fontName === hit.item.fontName
+      && Math.abs(run.ex[0] * hit.ex[0] + run.ex[1] * hit.ex[1]) > 0.999
+      && Math.abs(project(hit, run.origin)[1]) < 0.25 * hit.size && Math.abs(run.size - hit.size) < 0.05 * hit.size)
+      .map((run) => ({ run, start: project(hit, run.origin)[0] })).sort((p, q) => p.start - q.start);
+    let first = same.findIndex((entry) => entry.run === hit), last = first;
+    const gapOk = (left, right) => right.start - (left.start + left.run.width) < 1.2 * hit.size;
+    while (first > 0 && gapOk(same[first - 1], same[first])) first -= 1;
+    while (last < same.length - 1 && gapOk(same[last], same[last + 1])) last += 1;
+    const pieces = same.slice(first, last + 1);
+    let oldText = "";
+    pieces.forEach((entry, index) => {
+      if (index) {
+        const gap = entry.start - (pieces[index - 1].start + pieces[index - 1].run.width);
+        if (gap > 0.15 * hit.size && !oldText.endsWith(" ") && !entry.run.item.str.startsWith(" ")) oldText += " ";
+      }
+      oldText += entry.run.item.str;
+    });
+    const origin = pieces[0].run.origin;
+    const width = pieces.at(-1).start + pieces.at(-1).run.width - pieces[0].start;
+
+    // Ask the server what this line really is in the file: its font, size and colour. This also tells us
+    // up front if the line cannot be edited, instead of failing when the user saves.
+    const direction = pieces[0].run.ex;
+    const waiting = toast("Reading the line's font…", "info", 0);
+    let found;
+    try {
+      found = await api(`/api/documents/${this.documentId}/text-line`, {
+        method: "POST", json: { page: number, line: { origin, direction, width, height: hit.size } } });
+    } finally { waiting.remove(); }
+    if (!found.found) throw new Error(found.problem);
+    const fontName = found.font || "";
+    const family = found.family;
+    const detectedSize = Math.round(found.size * 10) / 10;
+    const look = [found.bold ? "bold" : "", found.italic ? "italic" : ""].filter(Boolean).join(" ");
+    const fontNote = found.can_keep_font
+      ? "ARD keeps this font as long as it already contains every character you type; a font stored in a PDF usually holds only the characters the document uses."
+      : `This font is stored in a form ARD cannot add new text to, so the closest standard font (${found.standard_equivalent}) will be used, at the same size and colour.`;
+
+    const existing = this.items.find((item) => item.type === "edit_text" && item.page === number
+      && Math.hypot(item.origin[0] - origin[0], item.origin[1] - origin[1]) < 0.5);
+    const values = await formDialog({
+      title: "Edit text",
+      intro: `Detected: ${fontName || "an unnamed font"}${look ? ` (${look})` : ""}, ${detectedSize} pt, colour ${found.color}. The original line is removed and your text is drawn in its place, starting at the same spot. Other lines do not move, so a much longer line may run into what is next to it.`,
+      submitLabel: "Apply",
+      fields: [
+        { name: "text", label: "Text", value: existing ? existing.text : oldText, required: true, maxlength: 2000 },
+        { name: "font", label: "Font", type: "select", value: existing ? existing.font : "original", options: [
+          { value: "original", label: `Same as the original${fontName ? ` (${fontName})` : ""}` },
+          { value: "sans", label: "Sans-serif (Helvetica)" }, { value: "serif", label: "Serif (Times)" }, { value: "mono", label: "Monospace (Courier)" }],
+          hint: fontNote },
+        { name: "size", label: "Size (points)", type: "number", min: 2, max: 800, value: existing && existing.size ? existing.size : detectedSize },
+      ],
+      validate: (v) => (!String(v.text || "").trim() ? "Type the new text, or cancel." : !WIN_ANSI.test(v.text)
+        ? "Editing text in place supports Latin characters for now. For other scripts, use Add text, which places the text as an image."
+        : !(v.size >= 2 && v.size <= 800) ? "Size must be between 2 and 800 points." : null),
+    });
+    if (!values) return;
+    const sizeChanged = Math.abs(values.size - detectedSize) > 0.05;
+    const item = {
+      type: "edit_text", page: number, origin, direction, width, height: hit.size, text: values.text, font: values.font,
+      preview: { oldText, size: values.size, family: values.font === "original" ? family : values.font, bold: found.bold, italic: found.italic, color: found.color },
+    };
+    if (sizeChanged) item.size = values.size;
+    if (values.text === oldText && values.font === "original" && !sizeChanged) {
+      if (existing) { const id = existing.id; this._commit(() => { this.items = this.items.filter((entry) => entry.id !== id); }); }
+      toast("Nothing was changed on that line.", "info");
+      return;
+    }
+    if (existing) { const id = existing.id; this._commit(() => { this.items = this.items.map((entry) => (entry.id === id ? { ...item, id } : entry)); }); }
+    else this.add(item);
   }
 
   /** Highlight tool: turn the current text selection into highlight items, one per page. */

@@ -130,3 +130,6 @@ main:has(.ws) { overflow: hidden; }
 .ws[data-submode="redact"] .ws-annbar [data-for="annotate"], .ws[data-submode="annotate"] .ws-annbar [data-for="redact"] { display: none; }
 .ws[data-submode="redact"] .ws-annbar { background: var(--danger-soft); }
 .ws-annbar .group-label[data-for="redact"] { text-transform: none; letter-spacing: 0; font-weight: 500; font-size: 12.5px; }
+
+.ws-view[data-tool="edit_text"] .edit-layer { cursor: text; }
+.edit-item .edit-cover { fill: #fff; fill-opacity: .94; stroke: #1d5f8f; stroke-dasharray: 3 2; }
