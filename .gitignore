@@ -1,9 +1,94 @@
-.venv/
+# Python bytecode and compiled files
 __pycache__/
-*.pyc
-.pytest_cache/
-application_data/
-.env
+*.py[cod]
+*$py.class
+*.so
+
+# Distribution / packaging (root-level only)
+/build/
+/dist/
+develop-eggs/
+eggs/
+.eggs/
 *.egg-info/
-dist/
-build/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+.venv/
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Environment files and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.pfx
+*.p12
+
+# Database & local session data
+*.sqlite
+*.sqlite3
+*.sqlite3-shm
+*.sqlite3-wal
+*.db
+*.db-shm
+*.db-wal
+session.token
+*.token
+
+# Application runtime data
+application_data/
+
+# Unit test and coverage reports
+.pytest_cache/
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py.cover
+.hypothesis/
+
+# Type checkers and linters
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pyre/
+.pytype/
+.ruff_cache/
+
+# IDEs and editors
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Operating System files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs and temporary files
+*.log
+logs/
+tmp/
+temp/
+
+# Never ignore bundled frontend vendor assets
+!frontend/static/vendor/**
